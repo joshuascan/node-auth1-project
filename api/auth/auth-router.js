@@ -46,11 +46,7 @@ router.post(
       password: hash,
     };
     const dbUser = await User.add(newUser);
-    try {
-      res.status(200).json(dbUser);
-    } catch (err) {
-      next(err);
-    }
+    res.status(200).json(dbUser);
   }
 );
 
@@ -72,9 +68,9 @@ router.post(
 
 router.post("/login", checkUsernameExists, async (req, res, next) => {
   const { username, password } = req.body;
+  const user = await User.findBy({ username }).first();
   try {
-    const user = await User.findBy({ username }).first();
-    if (username && password) {
+    if (bcrypt.compareSync(password, user.password)) {
       req.session.user = user;
       res.status(200).json({ message: `Welcome ${username}!` });
     } else {
