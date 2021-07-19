@@ -11,7 +11,10 @@ function find() {
   resolves to an ARRAY with all users that match the filter condition
  */
 function findBy(filter) {
-  return db("users").where(filter).orderBy("id");
+  return db("users")
+    .where(filter)
+    .select("user_id", "username")
+    .orderBy("user_id");
 }
 
 /**

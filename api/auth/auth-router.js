@@ -2,6 +2,12 @@ const express = require("express");
 const router = express.Router();
 const User = require("../users/users-model");
 const bcrypt = require("bcryptjs");
+
+const {
+  checkUsernameFree,
+  checkUsernameExists,
+  checkPasswordLength,
+} = require("./auth-middleware");
 // Require `checkUsernameFree`, `checkUsernameExists` and `checkPasswordLength`
 // middleware functions from `auth-middleware.js`. You will need them here!
 
@@ -28,10 +34,14 @@ const bcrypt = require("bcryptjs");
   }
  */
 
-router.post("/register", async (req, res, next) => {
+router.post("/register", checkUsernameFree, async (req, res, next) => {
   const { username, password } = req.body;
-  const dbUser = await User.add({ username, password });
-  res.status(201).json(dbUser);
+  try {
+    const dbUser = await User.add({ username, password });
+    res.status(201).json(dbUser);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /**
