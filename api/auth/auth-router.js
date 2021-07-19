@@ -60,6 +60,21 @@ router.post("/register", checkUsernameFree, async (req, res, next) => {
   }
  */
 
+router.post("/login", checkUsernameExists, async (req, res, next) => {
+  const { username, password } = req.body;
+  try {
+    const user = await User.findBy({ username }).first();
+    if (username && password) {
+      req.session = { user };
+      res.status(200).json({ message: `Welcome ${username}!` });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 /**
   3 [GET] /api/auth/logout
 

@@ -27,7 +27,6 @@ function restricted(req, res, next) {
 async function checkUsernameFree(req, res, next) {
   try {
     const existing = await User.findBy({ username: req.body.username });
-    console.log(existing);
     if (existing.length === 0) {
       next();
     } else {
@@ -46,7 +45,18 @@ async function checkUsernameFree(req, res, next) {
     "message": "Invalid credentials"
   }
 */
-function checkUsernameExists() {}
+async function checkUsernameExists(req, res, next) {
+  const existing = await User.findBy({ username: req.body.username });
+  try {
+    if (existing.length > 0) {
+      next();
+    } else {
+      next({ status: 401, message: "Invalid credentials" });
+    }
+  } catch (err) {
+    next(err);
+  }
+}
 
 /*
   If password is missing from req.body, or if it's 3 chars or shorter
