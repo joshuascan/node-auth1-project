@@ -34,15 +34,25 @@ const {
   }
  */
 
-router.post("/register", checkUsernameFree, async (req, res, next) => {
-  const { username, password } = req.body;
-  try {
-    const dbUser = await User.add({ username, password });
-    res.status(201).json(dbUser);
-  } catch (err) {
-    next(err);
+router.post(
+  "/register",
+  checkUsernameFree,
+  checkPasswordLength,
+  async (req, res, next) => {
+    const { username, password } = req.body;
+    const hash = bcrypt.hashSync(password, 8);
+    const newUser = {
+      username: username,
+      password: hash,
+    };
+    const dbUser = await User.add(newUser);
+    try {
+      res.status(200).json(dbUser);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
   2 [POST] /api/auth/login { "username": "sue", "password": "1234" }
@@ -65,7 +75,7 @@ router.post("/login", checkUsernameExists, async (req, res, next) => {
   try {
     const user = await User.findBy({ username }).first();
     if (username && password) {
-      req.session = { user };
+      req.session.user = user;
       res.status(200).json({ message: `Welcome ${username}!` });
     } else {
       res.status(401).json({ message: "Invalid credentials" });
